@@ -1,0 +1,37 @@
+[versions]
+agp = "8.3.0"
+kotlin = "2.0.0"
+coreKtx = "1.13.1"
+junit = "4.13.2"
+junitVersion = "1.1.5"
+espressoCore = "3.5.1"
+appcompat = "1.6.1"
+liveEventBusX = "1.8.0"
+material = "1.12.0"
+activity = "1.9.0"
+constraintlayout = "2.1.4"
+eventbus = "3.3.1"
+rxjava = "3.1.8"
+symbolProcessingApi = "2.0.0-1.0.21"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+live-event-bus-x = { module = "io.github.jeremyliao:live-event-bus-x", version.ref = "liveEventBusX" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+eventbus = { group = "org.greenrobot", name="eventbus", version.ref = "eventbus" }
+eventbus-annotation-processor = {group = "org.greenrobot", name = "eventbus-annotation-processor", version.ref = "eventbus"}
+rxjava = { module = "io.reactivex.rxjava3:rxjava", version.ref = "rxjava" }
+symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "symbolProcessingApi" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+
+
