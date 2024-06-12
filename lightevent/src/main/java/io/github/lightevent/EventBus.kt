@@ -48,7 +48,7 @@ class EventBus {
     }
 
     private class PostingThreadState {
-        var queue: ArrayDeque<Any>? = null
+        var eventQueue: ArrayDeque<Any>? = null
         var isPosting = false
     }
 
@@ -133,7 +133,7 @@ class EventBus {
     fun post(event: Any) {
         val postingState = currentPostingThreadState.get()!!
         if (postingState.isPosting) {
-            (postingState.queue ?: ArrayDeque<Any>().also { postingState.queue = it }).add(event)
+            (postingState.eventQueue ?: ArrayDeque<Any>().also { postingState.eventQueue = it }).add(event)
             return
         }
         postingState.isPosting = true
@@ -142,10 +142,10 @@ class EventBus {
         try {
             val isMainThread = Looper.getMainLooper() == Looper.myLooper()
             postEvents(event, isMainThread)
-            var deferQueue = postingState.queue?.removeFirstOrNull()
-            while (deferQueue != null) {
-                postEvents(deferQueue, isMainThread)
-                deferQueue = postingState.queue?.removeFirstOrNull()
+            var deferEvent = postingState.eventQueue?.removeFirstOrNull()
+            while (deferEvent != null) {
+                postEvents(deferEvent, isMainThread)
+                deferEvent = postingState.eventQueue?.removeFirstOrNull()
             }
         } finally {
             postingState.isPosting = false
