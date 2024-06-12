@@ -1,5 +1,7 @@
 # LightEventBus
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.billywei01/lightevent)](https://search.maven.org/artifact/io.github.billywei01/lightevent)
+
 LightEventBus是基于Android平台的轻量级的事件总线。
 
 其功能类似于 [EventBus](https://github.com/greenrobot/EventBus), 但API有些差异。<br>
@@ -10,7 +12,10 @@ LightEventBus 具体用法如下：
 # 用法
 
 ## 1、代码引入
-现阶段代码没有发布到 maven 中央仓库，引用代码可直接拷贝源码到项目中。<br>
+
+```gradle
+implementation("io.github.billywei01:lightevent:1.0.1")
+```
 
 ## 2、声明事件
 ```kotlin
