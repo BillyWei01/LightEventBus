@@ -268,7 +268,7 @@ class EventCountProcessor(env: SymbolProcessorEnvironment) : SymbolProcessor {
             )
             .append("    }\n\n")
             .append("    private fun formatTime(time: Long): String {\n")
-            .append("        return \"\${time / 1000_000}.\${(time % 1000_000) / 10000}\"\n")
+            .append("        return \"\${time / 1000_000}.\${(time % 1000_000) / 100000}\"\n")
             .append("    }\n")
             .append('}')
             .append('\n')

@@ -29,7 +29,7 @@ object ReflectionEventBusTest {
     }
 
     private fun formatTime(time: Long): String{
-        return "${time / 1000_000}.${(time % 1000_000) / 10000}"
+        return "${time / 1000_000}.${(time % 1000_000) / 100000}"
     }
 }
 

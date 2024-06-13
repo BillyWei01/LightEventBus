@@ -27,7 +27,7 @@ object RxBusTest {
                 "post:${formatTime(t3 - t2)}, unregister:${formatTime(t4 - t3)}"
     }
 
-    private fun formatTime(time: Long): String{
-        return "${time / 1000_000}.${(time % 1000_000) / 10000}"
+    private fun formatTime(time: Long): String {
+        return "${time / 1000_000}.${(time % 1000_000) / 100000}"
     }
 }
