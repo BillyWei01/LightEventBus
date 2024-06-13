@@ -14,7 +14,7 @@ LightEventBus 具体用法如下：
 ## 1、代码引入
 
 ```gradle
-implementation("io.github.billywei01:lightevent:1.0.1")
+implementation("io.github.billywei01:lightevent:1.0.2")
 ```
 
 ## 2、声明事件
@@ -26,7 +26,7 @@ data class NormalEvent(val time: String)
 使用 LightEventBus，订阅方法不需要声明为类的方法，不需要添加注解。 <br>
 只需要定义一个`EventHandler` 实例（包含方法和参数）。
 
-`EventHandler`的类定义（LightEventBus的一部分，使用时不需要定义）如下：
+`EventHandler`的声明如下：
 
 ```kotlin
 // 响应事件的方法
@@ -52,10 +52,12 @@ class EventHandler<T>(
 }
 ```
 
+备注：`EventHandler`是源码的一部分，使用时不需要定义。<br>
+
 `EventHandler`有多种创建方式，可以用直接`new`，也可以同通过`create`方法创建（可以少传一些参数）。 <br>
 例如：
 ```kotlin
-val handler = EventHandler.create<NormalEvent> { event ->
+val handler = EventHandler.create<NormalEvent>(threadMode = ThreadMode.MAIN) { event ->
     Log.d("TAG", "event:${event::class.simpleName}")
 }
 ```
@@ -71,10 +73,10 @@ private fun onNormalEvent(event: NormalEvent){
 EventHandler.create(action = ::onNormalEvent)
 ```
 
-`EventHandler`支持设定粘性事件和线程模式：
+`EventHandler`支持设定线程模式、粘性事件和优先级：
 
 ```kotlin
-EventHandler.create(sticky = true, threadMode = ThreadMode.ASYNC, action = ::onNormalEvent)
+EventHandler.create(threadMode = ThreadMode.ASYNC, sticky = true, priority = 100, action = ::onNormalEvent)
 ```
 
 
