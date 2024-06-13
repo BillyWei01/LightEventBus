@@ -14,10 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * 入口类名沿用“EventBus”而不是“LightEventBus”，是为了尽量代码兼容原版 EventBus 的API。
  */
-class EventBus private constructor(config: EventBusConfig) {
+class EventBus {
     companion object {
-        private val defaultConfig = EventBusConfig()
-        private val defaultEventBus by lazy { EventBus(defaultConfig) }
+        private val defaultEventBus by lazy { EventBus() }
         private val instantMap = ConcurrentHashMap<String, EventBus>()
 
         private val eventTypesCache: MutableMap<Class<*>, ArrayList<Class<*>>> = HashMap()
@@ -43,22 +42,21 @@ class EventBus private constructor(config: EventBusConfig) {
          * @param config 用于初始化实例的配置
          */
         @JvmStatic
-        fun get(channel: String, config: EventBusConfig = defaultConfig): EventBus {
+        fun get(channel: String): EventBus {
             if (channel.isEmpty()) return defaultEventBus
             return instantMap[channel] ?: synchronized(this) {
-                instantMap[channel] ?: EventBus(config).also { instantMap[channel] = it }
+                instantMap[channel] ?: EventBus().also { instantMap[channel] = it }
             }
         }
     }
 
-    private val eventInheritance: Boolean = config.eventInheritance
+    // 是否启用事件继承
+    private var eventInheritance: Boolean = true
 
     private class PostingThreadState {
         var eventQueue: ArrayDeque<Any>? = null
         var isPosting = false
     }
-
-    private val postingCount = AtomicInteger()
 
     private val currentPostingThreadState: ThreadLocal<PostingThreadState> =
         object : ThreadLocal<PostingThreadState>() {
@@ -66,6 +64,9 @@ class EventBus private constructor(config: EventBusConfig) {
                 return PostingThreadState()
             }
         }
+
+    // 正在发送事件的线程的数量
+    private val postingCount = AtomicInteger()
 
     private val mainPoster = Handler(Looper.getMainLooper())
     private val backgroundPoster = Poster(1)
@@ -157,7 +158,12 @@ class EventBus private constructor(config: EventBusConfig) {
     fun post(event: Any) {
         val postingState = currentPostingThreadState.get()!!
         if (postingState.isPosting) {
-            (postingState.eventQueue ?: ArrayDeque<Any>().also { postingState.eventQueue = it }).add(event)
+            val queue = postingState.eventQueue
+            if (queue == null) {
+                postingState.eventQueue = ArrayDeque<Any>().apply { add(event) }
+            } else {
+                queue.add(event)
+            }
             return
         }
         postingState.isPosting = true
@@ -179,13 +185,13 @@ class EventBus private constructor(config: EventBusConfig) {
 
     private fun postSingleEvent(event: Any, isMainThread: Boolean) {
         val eventClass: Class<*> = event::class.java
-        if(eventInheritance){
+        if (eventInheritance) {
             val eventTypes: List<Class<*>> = lookupAllEventTypes(eventClass)
             val countTypes = eventTypes.size
             for (h in 0 until countTypes) {
                 postEventForEventType(event, isMainThread, eventTypes[h])
             }
-        }else{
+        } else {
             postEventForEventType(event, isMainThread, eventClass)
         }
     }
@@ -231,6 +237,7 @@ class EventBus private constructor(config: EventBusConfig) {
         }
     }
 
+    // 查找当前类型的所有层级的父类，以及接口
     private fun lookupAllEventTypes(eventClass: Class<*>): List<Class<*>> {
         synchronized(eventTypesCache) {
             return eventTypesCache.getOrPut(eventClass) {
@@ -278,5 +285,12 @@ class EventBus private constructor(config: EventBusConfig) {
      */
     fun setExecutor(executor: Executor) {
         Poster.setExecutor(executor)
+    }
+
+    /**
+     * 设置是否启用事件继承
+     */
+    fun setEventInheritance(enable: Boolean) {
+        eventInheritance = enable
     }
 }

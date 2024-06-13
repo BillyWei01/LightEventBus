@@ -14,7 +14,7 @@ LightEventBus 具体用法如下：
 ## 1、代码引入
 
 ```gradle
-implementation("io.github.billywei01:lightevent:1.0.2")
+implementation("io.github.billywei01:lightevent:1.0.3")
 ```
 
 ## 2、声明事件
@@ -62,7 +62,7 @@ val handler = EventHandler.create<NormalEvent>(threadMode = ThreadMode.MAIN) { e
 }
 ```
 
-`EventHandler` 将 `action` 放在最后一个参数，故而可以用如上的 lambda 形式传参。
+`EventHandler` 将 `action` 放在最后一个参数，故而可以用如上的 lambda 形式传参。 <br>
 
 如果已经声明的方法，可以直接传给`create`方法：
 
@@ -73,6 +73,7 @@ private fun onNormalEvent(event: NormalEvent){
 EventHandler.create(action = ::onNormalEvent)
 ```
 
+<br>
 `EventHandler`支持设定线程模式、粘性事件和优先级：
 
 ```kotlin
@@ -122,6 +123,13 @@ EventBus.getDefault().post(NormalEvent(time))
 
 // 发布粘性事件
 EventBus.getDefault().postSticky(StickyEvent(time))
+```
+
+和原版EventBus一样，发布事件默认开启“事件继承”（订阅方法注册父类型的事件，可收到其子类的事件）。<br>
+可以通过`setEventInheritance`方法设置是否启用“事件继承”
+
+```kotlin
+ eventBus.setEventInheritance(false)
 ```
 
 # License

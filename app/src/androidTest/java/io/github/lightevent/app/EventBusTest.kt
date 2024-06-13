@@ -1,7 +1,6 @@
 package io.github.lightevent.app
 
 import io.github.lightevent.EventBus
-import io.github.lightevent.EventBusConfig
 import io.github.lightevent.EventHandler
 import org.junit.Assert
 import org.junit.Test
@@ -131,7 +130,8 @@ class EventBusTest {
 
     @Test
     fun testDisableEventInheritance(){
-        val eventBus = EventBus.get("testDisableEventInheritance", EventBusConfig(false))
+        val eventBus = EventBus.get("testDisableEventInheritance")
+        eventBus.setEventInheritance(false)
 
         val eventList = mutableListOf<Class<*>>()
 
