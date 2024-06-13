@@ -87,7 +87,8 @@ EventHandler.create(action = ::onNormalEvent)
 ```
 
 <br>
-`EventHandler`支持设定线程模式、粘性事件和优先级：
+
+`EventHandler` 支持设定线程模式、粘性事件和优先级：
 
 ```kotlin
 EventHandler.create(threadMode = ThreadMode.ASYNC, sticky = true, priority = 100, action = ::onNormalEvent)
@@ -115,8 +116,9 @@ EventBus.getDefault().unregister(handlers)
 而 LightEventBus 传入的是方法列表。
 
 <br>
+
 如果运行环境有 `LifecycleOwner`，可自定义扩展函数，在特定的生命周期取消订阅。<br>
-<br>
+
 
 ```kotlin
 fun EventBus.registerEventHandlers(
@@ -135,6 +137,8 @@ fun EventBus.registerEventHandlers(
     register(handlers)
 }
 ```
+
+<br>
 
 ### 2.5发布事件
 ```kotlin
