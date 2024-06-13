@@ -32,7 +32,7 @@ implementation("io.github.billywei01:lightevent:1.0.3")
 data class NormalEvent(val time: String)
 ```
 
-### 2.3 创建事件处理
+### 2.3 事件处理
 使用 LightEventBus，订阅方法不需要声明为类的方法，不需要添加注解。 <br>
 只需要定义一个`EventHandler` 实例（包含方法和参数）。
 
