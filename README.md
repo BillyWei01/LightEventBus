@@ -2,27 +2,37 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.billywei01/lightevent)](https://search.maven.org/artifact/io.github.billywei01/lightevent)
 
-LightEventBus是基于Android平台的轻量级的事件总线。
+## 一、概述
+LightEventBus是基于Android平台的轻量级的事件总线。<br>
 
-其功能类似于 [EventBus](https://github.com/greenrobot/EventBus), 但API有些差异。<br>
+LightEventBus的功能类似于 [EventBus](https://github.com/greenrobot/EventBus)：支持线程模式、粘性事件、优先级等功能。<br>
 
+除了“轻量”的特点之外，LightEventBus 在性能方面，也有一定优化（相对其他事件总线的实现）。
 
-LightEventBus 具体用法如下：
+| 方式                     | 准备   | 注册  | 发送  | 取消注册 |
+| ---------------------- | ---- | --- | --- | ---- |
+| **IndexEventBus**      | 9.9  | 3.8 | 3.1 | 0.5  |
+| **ReflectionEventBus** | 0.7  | 7.9 | 1.4 | 0.3  |
+| **LiveEventBus**       | 0.6  | 6.9 | 1.3 | 1.1  |
+| **RxBus**              | 15.5 | 4.2 | 5.7 | 0.3  |
+| **LightEventBus**      | 0.7  | 0.4 | 1.7 | 0.2  |
 
-# 用法
+<br>
 
-## 1、代码引入
+## 二、用法
+
+### 2.1 代码引入
 
 ```gradle
 implementation("io.github.billywei01:lightevent:1.0.3")
 ```
 
-## 2、声明事件
+### 2.2 声明事件
 ```kotlin
 data class NormalEvent(val time: String)
 ```
 
-## 3、创建事件处理
+### 2.3 创建事件处理
 使用 LightEventBus，订阅方法不需要声明为类的方法，不需要添加注解。 <br>
 只需要定义一个`EventHandler` 实例（包含方法和参数）。
 
@@ -53,8 +63,10 @@ class EventHandler<T>(
 ```
 
 备注：`EventHandler`是源码的一部分，使用时不需要定义。<br>
+<br>
 
 `EventHandler`有多种创建方式，可以用直接`new`，也可以同通过`create`方法创建（可以少传一些参数）。 <br>
+
 例如：
 ```kotlin
 val handler = EventHandler.create<NormalEvent>(threadMode = ThreadMode.MAIN) { event ->
@@ -64,6 +76,7 @@ val handler = EventHandler.create<NormalEvent>(threadMode = ThreadMode.MAIN) { e
 
 `EventHandler` 将 `action` 放在最后一个参数，故而可以用如上的 lambda 形式传参。 <br>
 
+<br>
 如果已经声明的方法，可以直接传给`create`方法：
 
 ```kotlin
@@ -80,8 +93,9 @@ EventHandler.create(action = ::onNormalEvent)
 EventHandler.create(threadMode = ThreadMode.ASYNC, sticky = true, priority = 100, action = ::onNormalEvent)
 ```
 
+<br>
 
-## 4、订阅/取消订阅
+### 2.4 订阅/取消订阅
 ```kotlin
 private val handlers: List<EventHandler<*>> by lazy {
     listOf(
@@ -96,7 +110,13 @@ EventBus.getDefault().register(handlers)
 EventBus.getDefault().unregister(handlers)    
 ```
 
-如果运行环境有 `LifecycleOwner`，可自定义扩展函数，在特定的生命周期取消订阅。
+订阅事件的用法和EventBus有些区别：<br>
+原版 EventBus 传入的是订阅者（订阅方法所在的类），<br>
+而 LightEventBus 传入的是方法列表。
+
+<br>
+如果运行环境有 `LifecycleOwner`，可自定义扩展函数，在特定的生命周期取消订阅。<br>
+<br>
 
 ```kotlin
 fun EventBus.registerEventHandlers(
@@ -116,7 +136,7 @@ fun EventBus.registerEventHandlers(
 }
 ```
 
-## 5、发布事件
+### 2.5发布事件
 ```kotlin
 // 发布事件
 EventBus.getDefault().post(NormalEvent(time)) 
@@ -125,13 +145,19 @@ EventBus.getDefault().post(NormalEvent(time))
 EventBus.getDefault().postSticky(StickyEvent(time))
 ```
 
-和原版EventBus一样，发布事件默认开启“事件继承”（订阅方法注册父类型的事件，可收到其子类的事件）。<br>
+和原版EventBus一样，发布事件默认启用“事件继承”（订阅方法注册父类型的事件，可收到其子类的事件）。<br>
+<br>
 可以通过`setEventInheritance`方法设置是否启用“事件继承”
 
 ```kotlin
  eventBus.setEventInheritance(false)
 ```
 
-# License
+## 三、参考链接
+LightEventBus 参考了 EventBus 的实现原理。<br>
+原理方面，可参考文章：<br>
+https://juejin.cn/post/7379831020495749157
+
+## License
 See the [LICENSE](LICENSE.md) file for license rights and limitations.
 
