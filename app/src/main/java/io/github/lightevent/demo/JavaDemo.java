@@ -31,7 +31,11 @@ public class JavaDemo {
 
         // lambda 写法
         handlers.add(
-                new EventHandler<MessageEvent>(MessageEvent.class, false, ThreadMode.POSTING,
+                new EventHandler<MessageEvent>(
+                        MessageEvent.class,
+                        ThreadMode.POSTING,
+                        false,
+                        0,
                         event -> {
                             Log.d("Test", "data:" + event.time);
                             return null;
@@ -43,8 +47,9 @@ public class JavaDemo {
         handlers.add(
                 new EventHandler<LoginEvent>(
                         LoginEvent.class,
-                        false,
                         ThreadMode.MAIN,
+                        false,
+                        0,
                         new Function1<LoginEvent, Unit>() {
                             @Override
                             public Unit invoke(LoginEvent event) {

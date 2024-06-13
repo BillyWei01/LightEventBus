@@ -72,7 +72,7 @@ class EventCountProcessor(env: SymbolProcessorEnvironment) : SymbolProcessor {
         }
         builder.append("\n        val t3 = System.nanoTime()\n\n")
 
-        for (i in 1..eventCount) {
+        for (i in eventCount downTo 1) {
             builder.append("        EventBus.getDefault().unregister(handler$i)\n")
         }
 
@@ -112,7 +112,7 @@ class EventCountProcessor(env: SymbolProcessorEnvironment) : SymbolProcessor {
         }
         builder.append("\n        val t3 = System.nanoTime()\n\n")
 
-        for (i in 1..eventCount) {
+        for (i in eventCount downTo 1) {
             builder.append("        EventBus.getDefault().unregister(handler$i)\n")
         }
 
@@ -168,7 +168,7 @@ class EventCountProcessor(env: SymbolProcessorEnvironment) : SymbolProcessor {
         }
         builder.append("\n        val t3 = System.nanoTime()\n\n")
 
-        for (i in 1..eventCount) {
+        for (i in eventCount downTo 1) {
             builder.append("        eventBus.unregister(handler$i)\n")
         }
 
@@ -212,7 +212,7 @@ class EventCountProcessor(env: SymbolProcessorEnvironment) : SymbolProcessor {
             builder.append("        bus.onNext(Event$i())\n")
         }
         builder.append("\n        val t3 = System.nanoTime()\n\n")
-        for (i in 1..eventCount) {
+        for (i in eventCount downTo 1) {
             builder.append("        disposable$i.dispose()\n")
         }
         builder.append("\n        val t4 = System.nanoTime()\n\n")
@@ -248,7 +248,7 @@ class EventCountProcessor(env: SymbolProcessorEnvironment) : SymbolProcessor {
             builder.append("        LiveEventBus.get<Event$i>(\"Event$i\").post(Event$i())\n")
         }
         builder.append("\n        val t3 = System.nanoTime()\n\n")
-        for (i in 1..eventCount) {
+        for (i in eventCount downTo 1) {
             builder.append("        LiveEventBus.get<Event$i>(\"Event$i\").removeObserver(observer$i)\n")
         }
         builder.append("\n        val t4 = System.nanoTime()\n\n")

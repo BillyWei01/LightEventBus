@@ -2,6 +2,7 @@ package io.github.lightevent.benchmark
 
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
+import org.greenrobot.eventbus.EventBus
 
 /**
  * 基准测试
@@ -14,16 +15,19 @@ object Benchmark {
 
     fun start(lifecycleOwner: LifecycleOwner): String {
         val indexEventBus = IndexEventBusTest.test()
+        EventBus.clearCaches()
         val reflectionEventBus = ReflectionEventBusTest.test()
-        val rxBus = RxBusTest.test()
-        val liveEventBus = LiveEventBusTest.test(lifecycleOwner)
-        val lightEvent = LightEventTest.test()
 
-        val message = "IndexEventBus: $indexEventBus\n" +
-                "ReflectionEventBus: $reflectionEventBus\n" +
-                "RxBus: $rxBus\n" +
-                "LiveEventBus: $liveEventBus\n" +
-                "LightEventBus: $lightEvent\n"
+        val liveEventBus = LiveEventBusTest.test(lifecycleOwner)
+        val rxBus = RxBusTest.test()
+        val lightEventBus = LightEventTest.test()
+
+        val message =
+            "IndexEventBus: $indexEventBus\n" +
+            "ReflectionEventBus: $reflectionEventBus\n" +
+            "LiveEventBus: $liveEventBus\n" +
+            "RxBus: $rxBus\n" +
+            "LightEventBus: $lightEventBus\n"
 
         Log.i(TAG, "$message ")
 

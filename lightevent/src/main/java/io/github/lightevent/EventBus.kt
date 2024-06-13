@@ -9,22 +9,25 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * LightEventBus 是基于 Android 平台的轻量级的事件总线。
  *
- * LightEventBus 的部分实现参考了 greenrobot 的 EventBus。
- * "类名"取“EventBus”是为了尽量代码兼容原版 EventBus 的API。
+ * LightEventBus 的实现参考了 greenrobot 的 EventBus,
+ * 除了订阅方法的注册方式不一样之外，其功能上基本时兼容原版EventBus。
  *
- * 顾名思义，LightEventBus 相比 EventBus 更加”轻量。
+ * 入口类名沿用“EventBus”而不是“LightEventBus”，是为了尽量代码兼容原版 EventBus 的API。
  */
-class EventBus {
+class EventBus private constructor(config: EventBusConfig) {
     companion object {
-        private val DEFAULT by lazy { EventBus() }
-        private val INSTANT_MAP = ConcurrentHashMap<String, EventBus>()
+        private val defaultConfig = EventBusConfig()
+        private val defaultEventBus by lazy { EventBus(defaultConfig) }
+        private val instantMap = ConcurrentHashMap<String, EventBus>()
+
+        private val eventTypesCache: MutableMap<Class<*>, ArrayList<Class<*>>> = HashMap()
 
         /**
          * 获取默认总线实例
          */
         @JvmStatic
         fun getDefault(): EventBus {
-            return DEFAULT
+            return defaultEventBus
         }
 
         /**
@@ -37,15 +40,18 @@ class EventBus {
          *   而订阅者支持取消订阅（unregister)。
          *
          * @param channel 通道，即总线实例的key。
+         * @param config 用于初始化实例的配置
          */
         @JvmStatic
-        fun get(channel: String): EventBus {
-            if (channel.isEmpty()) return DEFAULT
-            return INSTANT_MAP[channel] ?: synchronized(this) {
-                INSTANT_MAP[channel] ?: EventBus().also { INSTANT_MAP[channel] = it }
+        fun get(channel: String, config: EventBusConfig = defaultConfig): EventBus {
+            if (channel.isEmpty()) return defaultEventBus
+            return instantMap[channel] ?: synchronized(this) {
+                instantMap[channel] ?: EventBus(config).also { instantMap[channel] = it }
             }
         }
     }
+
+    private val eventInheritance: Boolean = config.eventInheritance
 
     private class PostingThreadState {
         var eventQueue: ArrayDeque<Any>? = null
@@ -66,7 +72,7 @@ class EventBus {
     private val asyncPoster = Poster(8)
 
     // 事件 -> 订阅者（集合）
-    private val subscriptions = mutableMapOf<Class<*>, MutableList<EventHandler<*>>>()
+    private val subscriptions = mutableMapOf<Class<*>, ArrayList<EventHandler<*>>>()
 
     // 粘性事件
     private val stickEvents = ConcurrentHashMap<Class<*>, Any>()
@@ -78,13 +84,13 @@ class EventBus {
         synchronized(this) {
             handlers.forEach { handler ->
                 val eventType = handler.eventType
-                val handlerList = subscriptions.getOrPut(eventType) { ArrayList(2) }
+                val list = subscriptions.getOrPut(eventType) { ArrayList(2) }
                 // 如果没有线程正在访问方法列表，则直接添加;
                 // 如果有，则执行 CopyOnWrite
                 if (postingCount.get() == 0) {
-                    handlerList.add(handler)
+                    addHandler(list, handler)
                 } else {
-                    subscriptions[eventType] = handlerList.toMutableList().apply { add(handler) }
+                    subscriptions[eventType] = ArrayList(list).apply { addHandler(this, handler) }
                 }
             }
         }
@@ -99,6 +105,24 @@ class EventBus {
                     }
                 }
             }
+        }
+    }
+
+    // 按优先级逆序排列
+    private fun addHandler(list: ArrayList<EventHandler<*>>, handler: EventHandler<*>) {
+        val size = list.size
+        val priority = handler.priority
+        // 快速判断：列表为空，或者优先级小于等于列表末尾，则直接插入列表末尾
+        if (size == 0 || priority <= list[size - 1].priority) {
+            list.add(handler)
+        } else {
+            for (i in 0..<size) {
+                if (priority > list[i].priority ) {
+                    list.add(i, handler)
+                    return
+                }
+            }
+            list.add(size, handler)
         }
     }
 
@@ -121,7 +145,7 @@ class EventBus {
                 if (postingCount.get() == 0) {
                     handlerList.remove(handler)
                 } else {
-                    subscriptions[eventType] = handlerList.toMutableList().apply { remove(handler) }
+                    subscriptions[eventType] = ArrayList(handlerList).apply { remove(handler) }
                 }
             }
         }
@@ -141,10 +165,10 @@ class EventBus {
 
         try {
             val isMainThread = Looper.getMainLooper() == Looper.myLooper()
-            postEvents(event, isMainThread)
+            postSingleEvent(event, isMainThread)
             var deferEvent = postingState.eventQueue?.removeFirstOrNull()
             while (deferEvent != null) {
-                postEvents(deferEvent, isMainThread)
+                postSingleEvent(deferEvent, isMainThread)
                 deferEvent = postingState.eventQueue?.removeFirstOrNull()
             }
         } finally {
@@ -153,8 +177,21 @@ class EventBus {
         }
     }
 
-    private fun postEvents(event: Any, isMainThread: Boolean) {
-        val handlerList = synchronized(this) { subscriptions[event::class.java] } ?: return
+    private fun postSingleEvent(event: Any, isMainThread: Boolean) {
+        val eventClass: Class<*> = event::class.java
+        if(eventInheritance){
+            val eventTypes: List<Class<*>> = lookupAllEventTypes(eventClass)
+            val countTypes = eventTypes.size
+            for (h in 0 until countTypes) {
+                postEventForEventType(event, isMainThread, eventTypes[h])
+            }
+        }else{
+            postEventForEventType(event, isMainThread, eventClass)
+        }
+    }
+
+    private fun postEventForEventType(event: Any, isMainThread: Boolean, eventClass: Class<*>) {
+        val handlerList = synchronized(this) { subscriptions[eventClass] } ?: return
         handlerList.forEach { handler ->
             postEvent(handler, event, isMainThread)
         }
@@ -190,6 +227,30 @@ class EventBus {
 
             ThreadMode.ASYNC -> {
                 asyncPoster.enqueue(action, event)
+            }
+        }
+    }
+
+    private fun lookupAllEventTypes(eventClass: Class<*>): List<Class<*>> {
+        synchronized(eventTypesCache) {
+            return eventTypesCache.getOrPut(eventClass) {
+                val eventTypes = ArrayList<Class<*>>()
+                var clazz: Class<*>? = eventClass
+                while (clazz != null) {
+                    eventTypes.add(clazz)
+                    addInterfaces(eventTypes, clazz.getInterfaces())
+                    clazz = clazz.superclass
+                }
+                ArrayList(eventTypes)
+            }
+        }
+    }
+
+    private fun addInterfaces(eventTypes: MutableList<Class<*>>, interfaces: Array<Class<*>>) {
+        for (interfaceClass in interfaces) {
+            if (!eventTypes.contains(interfaceClass)) {
+                eventTypes.add(interfaceClass)
+                addInterfaces(eventTypes, interfaceClass.getInterfaces())
             }
         }
     }
