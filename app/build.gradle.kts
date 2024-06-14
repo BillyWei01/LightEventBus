@@ -69,6 +69,6 @@ kapt {
 }
 
 ksp {
-    arg("eventCount", "200")
+    arg("eventCount", "100")
     arg("generatedPath", "${buildDir}/generated/ksp/debug/kotlin/")
 }

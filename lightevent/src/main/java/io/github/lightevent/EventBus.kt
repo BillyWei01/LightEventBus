@@ -50,9 +50,6 @@ class EventBus {
         }
     }
 
-    // 是否启用事件继承
-    private var eventInheritance: Boolean = true
-
     private class PostingThreadState {
         var eventQueue: ArrayDeque<Any>? = null
         var isPosting = false
@@ -156,6 +153,26 @@ class EventBus {
      * 发送事件
      */
     fun post(event: Any) {
+        post(event, false)
+    }
+
+    /**
+     * 发送事件
+     *
+     * 此接口支持指定是否使用“事件继承”。
+     *
+     * 若使用事件继承，发送事件时会检索事件类型的父类和接口，
+     * 然后连同事件类型本身，一同检查是否存在这些类型的订阅者。
+     * 例如，如果发送 String 类型的事件，
+     * 会先得到一个 [String, Serializable, Comparable，CharSequence，Object] 列表，
+     * 然后分别检查是否存在订阅这些类型的订阅者，有则发送事件给订阅者。
+     *
+     * 如果不使用事件继承，则只会检索是有订阅事件类型本身的订阅者。
+     *
+     * @param event 事件
+     * @param eventInheritance 是否使用事件继承。
+     */
+    fun post(event: Any, eventInheritance: Boolean) {
         val postingState = currentPostingThreadState.get()!!
         if (postingState.isPosting) {
             val queue = postingState.eventQueue
@@ -171,10 +188,10 @@ class EventBus {
 
         try {
             val isMainThread = Looper.getMainLooper() == Looper.myLooper()
-            postSingleEvent(event, isMainThread)
+            postSingleEvent(event, isMainThread, eventInheritance)
             var deferEvent = postingState.eventQueue?.removeFirstOrNull()
             while (deferEvent != null) {
-                postSingleEvent(deferEvent, isMainThread)
+                postSingleEvent(deferEvent, isMainThread, eventInheritance)
                 deferEvent = postingState.eventQueue?.removeFirstOrNull()
             }
         } finally {
@@ -183,7 +200,7 @@ class EventBus {
         }
     }
 
-    private fun postSingleEvent(event: Any, isMainThread: Boolean) {
+    private fun postSingleEvent(event: Any, isMainThread: Boolean, eventInheritance: Boolean) {
         val eventClass: Class<*> = event::class.java
         if (eventInheritance) {
             val eventTypes: List<Class<*>> = lookupAllEventTypes(eventClass)
@@ -285,12 +302,5 @@ class EventBus {
      */
     fun setExecutor(executor: Executor) {
         Poster.setExecutor(executor)
-    }
-
-    /**
-     * 设置是否启用事件继承
-     */
-    fun setEventInheritance(enable: Boolean) {
-        eventInheritance = enable
     }
 }

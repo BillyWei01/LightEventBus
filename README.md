@@ -9,13 +9,13 @@ LightEventBus的功能类似于 [EventBus](https://github.com/greenrobot/EventBu
 
 除了“轻量”的特点之外，LightEventBus 在性能方面，也有一定优化。
 
-| 方式                     | 准备   | 注册  | 发送  | 取消注册 |
-| ---------------------- | ---- | --- | --- | ---- |
-| **IndexEventBus**      | 9.9  | 3.8 | 3.1 | 0.5  |
-| **ReflectionEventBus** | 0.7  | 7.9 | 1.4 | 0.3  |
-| **LiveEventBus**       | 0.6  | 6.9 | 1.3 | 1.1  |
-| **RxBus**              | 15.5 | 4.2 | 5.7 | 0.3  |
-| **LightEventBus**      | 0.7  | 0.4 | 1.7 | 0.2  |
+| 方式                     | 准备 | 注册  | 发送  | 取消注册 |
+| ----------------------- | ---- | --- | --- | ---- |
+| **Index-EventBus**      | 14.9 | 4.1 | 3.1 | 0.4  |
+| **Reflection-EventBus** | 0.8  | 8.7 | 1.6 | 0.4  |
+| **LiveEventBus**        | 0.6  | 7.1 | 1.1 | 1.7  |
+| **RxBus**               | 17.4 | 3.5 | 4.4 | 0.3  |
+| **LightEventBus**       | 0.6  | 0.4 | 1.0 | 0.2  |
 
 <br>
 
@@ -24,7 +24,7 @@ LightEventBus的功能类似于 [EventBus](https://github.com/greenrobot/EventBu
 ### 2.1 代码引入
 
 ```gradle
-implementation("io.github.billywei01:lightevent:1.0.3")
+implementation("io.github.billywei01:lightevent:1.0.5")
 ```
 
 ### 2.2 声明事件
@@ -147,14 +147,6 @@ EventBus.getDefault().post(NormalEvent(time))
 
 // 发布粘性事件
 EventBus.getDefault().postSticky(StickyEvent(time))
-```
-
-和原版EventBus一样，发布事件默认启用“事件继承”（订阅方法注册父类型的事件，可收到其子类的事件）。<br>
-<br>
-可以通过`setEventInheritance`方法设置是否启用“事件继承”
-
-```kotlin
- eventBus.setEventInheritance(false)
 ```
 
 ## 三、参考链接

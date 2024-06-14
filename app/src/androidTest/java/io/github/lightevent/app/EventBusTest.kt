@@ -131,7 +131,6 @@ class EventBusTest {
     @Test
     fun testDisableEventInheritance(){
         val eventBus = EventBus.get("testDisableEventInheritance")
-        eventBus.setEventInheritance(false)
 
         val eventList = mutableListOf<Class<*>>()
 
@@ -146,13 +145,13 @@ class EventBusTest {
 
         eventBus.register(handler)
 
-        eventBus.post(Parent())
+        eventBus.post(Parent(), true)
         Assert.assertEquals(1, eventList.size)
         Assert.assertEquals(Parent::class.java, eventList[0])
 
         eventList.clear()
 
-        eventBus.post(Son())
+        eventBus.post(Son(), true)
         Assert.assertEquals(1, eventList.size)
         // 先发送给最具体的类型（子类）的订阅方法，再发送父类的订阅方法
         Assert.assertEquals(Son::class.java, eventList[0])
