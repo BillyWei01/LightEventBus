@@ -7,7 +7,7 @@ LightEventBus是基于Android平台的轻量级的事件总线。<br>
 
 LightEventBus的功能类似于 [EventBus](https://github.com/greenrobot/EventBus)：支持线程模式、粘性事件、优先级等功能。<br>
 
-除了“轻量”的特点之外，LightEventBus 在性能方面，也有一定优化（相对其他事件总线的实现）。
+除了“轻量”的特点之外，LightEventBus 在性能方面，也有一定优化。
 
 | 方式                     | 准备   | 注册  | 发送  | 取消注册 |
 | ---------------------- | ---- | --- | --- | ---- |
