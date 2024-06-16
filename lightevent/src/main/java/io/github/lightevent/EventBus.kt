@@ -1,3 +1,23 @@
+/**
+ * Copyright (C) 2012-2020 Markus Junginger, greenrobot (http://greenrobot.org)
+ *
+ * @Copyright(C) 2024 BillyWei
+ *
+ * LightEventBus 的实现参考了 greenrobot 的 EventBus。
+ * 为了尽量代码兼容原版 EventBus 的API, 类名沿用“EventBus”而不是“LightEventBus”；
+ * 并且 register/unregister/post等方法名也沿用了 EventBus 的命名。
+ *
+ * 在使用上，LightEventBus 和 EventBus 最大的不同之处在于：
+ *
+ * 1. 订阅方法的定义：
+ * EventBus 是通过给类方法添加 '@Subscribe' 注解, 并在注解中传入参数。
+ * LightEventBus 订阅方法不需要声明为类的方法，不需要添加注解，只需要创建一个EventHandler实例。
+ *
+ * 2. register/unregister：
+ * EventBus 需要传入声明了订阅方法的”订阅者”对象，
+ * LightEventBus 传入的EventHandler的列表。
+ */
+
 package io.github.lightevent
 
 import android.os.Handler
@@ -7,12 +27,43 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * LightEventBus 是基于 Android 平台的轻量级的事件总线。
+ * 响应事件的方法
+ */
+typealias Action<T> = (event: T) -> Unit
+
+/**
+ * 事件处理
  *
- * LightEventBus 的实现参考了 greenrobot 的 EventBus,
- * 除了订阅方法的注册方式不一样之外，其功能上基本时兼容原版EventBus。
- *
- * 入口类名沿用“EventBus”而不是“LightEventBus”，是为了尽量代码兼容原版 EventBus 的API。
+ * @param eventType 关联的事件类型
+ * @param threadMode 线程模式
+ * @param sticky 订阅时是否处理粘性事件（如果有的话）
+ * @param priority 同时订阅同一个事件的订阅多个方法：
+ *                  若优先级不同，数值大者先被处理；
+ *                  若优先级相同，先订阅者先被处理。
+ * @param action 响应事件的方法
+ */
+class EventHandler<T>(
+    val eventType: Class<*>,
+    val threadMode: ThreadMode,
+    val sticky: Boolean,
+    val priority: Int,
+    val action: Action<T>
+) {
+    companion object {
+        // 通过 create 方法可以更方便的创建 EventHandler 实例
+        inline fun <reified T> create(
+            threadMode: ThreadMode = ThreadMode.POSTING,
+            sticky: Boolean = false,
+            priority: Int = 0,
+            noinline action: Action<T>
+        ): EventHandler<T> {
+            return EventHandler(T::class.java, threadMode, sticky, priority, action)
+        }
+    }
+}
+
+/**
+ * EventBus 是基于Android平台的轻量级的事件总线。
  */
 class EventBus {
     companion object {
@@ -39,7 +90,6 @@ class EventBus {
          *   而订阅者支持取消订阅（unregister)。
          *
          * @param channel 通道，即总线实例的key。
-         * @param config 用于初始化实例的配置
          */
         @JvmStatic
         fun get(channel: String): EventBus {

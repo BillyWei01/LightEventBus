@@ -24,7 +24,7 @@ LightEventBus的功能类似于 [EventBus](https://github.com/greenrobot/EventBu
 ### 2.1 代码引入
 
 ```gradle
-implementation("io.github.billywei01:lightevent:1.0.5")
+implementation("io.github.billywei01:lightevent:1.0.6")
 ```
 
 ### 2.2 声明事件
