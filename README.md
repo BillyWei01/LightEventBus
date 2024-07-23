@@ -150,9 +150,11 @@ EventBus.getDefault().postSticky(StickyEvent(time))
 ```
 
 ## 三、参考链接
-LightEventBus 参考了 EventBus 的实现原理。<br>
 原理方面，可参考文章：<br>
 https://juejin.cn/post/7379831020495749157
+
+关于LightEventBus的实现，可参考文章：<br>
+https://juejin.cn/spost/7380694342745112614
 
 ## License
 See the [LICENSE](LICENSE.md) file for license rights and limitations.
